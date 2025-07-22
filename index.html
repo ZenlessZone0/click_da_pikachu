@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>点击加速动画</title>
+  <style>
+    body {
+      background: #111;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+    video {
+      width: 500px;
+      cursor: pointer;
+      border: 5px solid #fff;
+      border-radius: 10px;
+    }
+  </style>
+</head>
+<body>
+
+<video id="gif-video" autoplay loop muted>
+  <source src="ezgif-4cc1eb0b7e363d.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
+
+<script>
+  const video = document.getElementById('gif-video');
+  let speed = 1.0;
+
+  video.addEventListener('click', () => {
+    speed += 0.5;
+    if (speed > 4) speed = 1.0; // 循环回1x
+    video.playbackRate = speed;
+  });
+</script>
+
+</body>
+</html>
