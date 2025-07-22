@@ -14,14 +14,30 @@
       margin: 0;
       color: white;
       font-family: sans-serif;
-      overflow: hidden;
     }
-    video {
+    .video-wrapper {
+      position: relative;
+      display: inline-block;
+    }
+    #gif-video {
       width: 500px;
-      cursor: pointer;
-      border: 5px solid #fff;
       border-radius: 10px;
-      transition: box-shadow 0.3s ease;
+      z-index: 1;
+      position: relative;
+    }
+    .glow-ring {
+      content: '';
+      position: absolute;
+      top: -10px;
+      left: -10px;
+      right: -10px;
+      bottom: -10px;
+      border-radius: 15px;
+      z-index: 0;
+      box-shadow: 0 0 30px 10px yellow;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      pointer-events: none;
     }
     button {
       margin-top: 20px;
@@ -38,30 +54,17 @@
       font-size: 18px;
       color: #aaa;
     }
-    #flash-overlay {
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 0;
-      height: 0;
-      border-radius: 50%;
-      background: yellow;
-      opacity: 0.6;
-      pointer-events: none;
-      z-index: 9999;
-      transition: width 0.3s ease, height 0.3s ease, background 0.3s ease;
-    }
   </style>
 </head>
 <body>
 
-<div id="flash-overlay"></div>
-
-<video id="gif-video" autoplay loop muted>
-  <source src="ezgif-4cc1eb0b7e363d.mp4" type="video/mp4">
-  Your browser does not support the video tag.
-</video>
+<div class="video-wrapper">
+  <video id="gif-video" autoplay loop muted>
+    <source src="ezgif-4cc1eb0b7e363d.mp4" type="video/mp4">
+    Your browser does not support the video tag.
+  </video>
+  <div class="glow-ring" id="glow"></div>
+</div>
 
 <div id="speed-indicator">当前速度：1.0x</div>
 <button id="reset-button">还原速度</button>
@@ -70,58 +73,56 @@
   const video = document.getElementById('gif-video');
   const resetBtn = document.getElementById('reset-button');
   const speedText = document.getElementById('speed-indicator');
-  const flashOverlay = document.getElementById('flash-overlay');
+  const glow = document.getElementById('glow');
 
   let speed = 1.0;
+  let currentSpeed = 1.0;
   let alerted = false;
+  let spectrumColors = ['red', 'orange', 'yellow', 'green', 'blue', 'indigo', 'violet'];
+  let spectrumIndex = 0;
+
+  setInterval(() => {
+    let size = 10 + currentSpeed * 1.5;
+    let blur = 5 + currentSpeed;
+
+    if (currentSpeed >= 50) {
+      glow.style.boxShadow = `0 0 ${size}px ${blur}px ${spectrumColors[spectrumIndex]}`;
+      spectrumIndex = (spectrumIndex + 1) % spectrumColors.length;
+    } else {
+      glow.style.boxShadow = `0 0 ${size}px ${blur}px yellow`;
+    }
+
+    glow.style.opacity = '1';
+    setTimeout(() => {
+      glow.style.opacity = '0';
+    }, 200);
+  }, 300);
 
   video.addEventListener('click', () => {
     if (speed < 50) {
       speed += 1.0;
-
-      // 设置最大实际播放速率
+      currentSpeed = speed;
       video.playbackRate = Math.min(speed, 16);
-
       speedText.textContent = `当前速度：${speed.toFixed(1)}x`;
 
-      // 彩蛋只提示一次
       if (speed >= 50 && !alerted) {
         alert('🚀 皮卡丘的舞蹈已经超越光速！宇宙开始震颤！🚀');
         alerted = true;
       }
-
-      // 每次点击产生闪光，根据速度扩大覆盖
-      let size = Math.min(100 + speed * 20, 2000); // 最大覆盖全屏
-      flashOverlay.style.width = size + "px";
-      flashOverlay.style.height = size + "px";
-
-      if (speed >= 50) {
-        // 超过 50 开始彩虹渐变
-        flashOverlay.style.background = `conic-gradient(from ${speed * 10}deg, red, orange, yellow, green, blue, indigo, violet, red)`;
-      } else {
-        flashOverlay.style.background = "yellow";
-      }
-
-      flashOverlay.style.opacity = "0.8";
-      flashOverlay.style.transition = "none";
-      setTimeout(() => {
-        flashOverlay.style.transition = "opacity 0.5s ease";
-        flashOverlay.style.opacity = "0";
-      }, 50);
     }
   });
 
   resetBtn.addEventListener('click', () => {
     speed = 1.0;
+    currentSpeed = 1.0;
     alerted = false;
-    video.playbackRate = speed;
-    speedText.textContent = `当前速度：${speed.toFixed(1)}x`;
-    flashOverlay.style.opacity = "0";
-    flashOverlay.style.background = "yellow";
-    flashOverlay.style.width = "0";
-    flashOverlay.style.height = "0";
+    spectrumIndex = 0;
+    video.playbackRate = 1.0;
+    speedText.textContent = `当前速度：1.0x`;
+    glow.style.boxShadow = `0 0 30px 10px yellow`;
   });
 </script>
 
 </body>
 </html>
+
