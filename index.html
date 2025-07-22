@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>点击加速动画</title>
+  <title>皮卡丘的超光速舞蹈</title>
   <style>
     body {
       background: #111;
@@ -14,12 +14,14 @@
       margin: 0;
       color: white;
       font-family: sans-serif;
+      overflow: hidden;
     }
     video {
       width: 500px;
       cursor: pointer;
       border: 5px solid #fff;
       border-radius: 10px;
+      transition: box-shadow 0.3s ease;
     }
     button {
       margin-top: 20px;
@@ -36,9 +38,25 @@
       font-size: 18px;
       color: #aaa;
     }
+    #flash-overlay {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 0;
+      height: 0;
+      border-radius: 50%;
+      background: yellow;
+      opacity: 0.6;
+      pointer-events: none;
+      z-index: 9999;
+      transition: width 0.3s ease, height 0.3s ease, background 0.3s ease;
+    }
   </style>
 </head>
 <body>
+
+<div id="flash-overlay"></div>
 
 <video id="gif-video" autoplay loop muted>
   <source src="ezgif-4cc1eb0b7e363d.mp4" type="video/mp4">
@@ -52,24 +70,56 @@
   const video = document.getElementById('gif-video');
   const resetBtn = document.getElementById('reset-button');
   const speedText = document.getElementById('speed-indicator');
+  const flashOverlay = document.getElementById('flash-overlay');
 
   let speed = 1.0;
+  let alerted = false;
 
   video.addEventListener('click', () => {
     if (speed < 50) {
       speed += 1.0;
-      video.playbackRate = speed;
+
+      // 设置最大实际播放速率
+      video.playbackRate = Math.min(speed, 16);
+
       speedText.textContent = `当前速度：${speed.toFixed(1)}x`;
-      if (speed >= 50) {
-        alert('⚡皮卡丘的舞蹈已经超越光速了！⚡');
+
+      // 彩蛋只提示一次
+      if (speed >= 50 && !alerted) {
+        alert('🚀 皮卡丘的舞蹈已经超越光速！宇宙开始震颤！🚀');
+        alerted = true;
       }
+
+      // 每次点击产生闪光，根据速度扩大覆盖
+      let size = Math.min(100 + speed * 20, 2000); // 最大覆盖全屏
+      flashOverlay.style.width = size + "px";
+      flashOverlay.style.height = size + "px";
+
+      if (speed >= 50) {
+        // 超过 50 开始彩虹渐变
+        flashOverlay.style.background = `conic-gradient(from ${speed * 10}deg, red, orange, yellow, green, blue, indigo, violet, red)`;
+      } else {
+        flashOverlay.style.background = "yellow";
+      }
+
+      flashOverlay.style.opacity = "0.8";
+      flashOverlay.style.transition = "none";
+      setTimeout(() => {
+        flashOverlay.style.transition = "opacity 0.5s ease";
+        flashOverlay.style.opacity = "0";
+      }, 50);
     }
   });
 
   resetBtn.addEventListener('click', () => {
     speed = 1.0;
+    alerted = false;
     video.playbackRate = speed;
     speedText.textContent = `当前速度：${speed.toFixed(1)}x`;
+    flashOverlay.style.opacity = "0";
+    flashOverlay.style.background = "yellow";
+    flashOverlay.style.width = "0";
+    flashOverlay.style.height = "0";
   });
 </script>
 
